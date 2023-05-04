@@ -102,13 +102,13 @@ class eGela:
 
         # INICIALIZA Y ACTUALIZAR BARRA DE PROGRESO
         # POR CADA PDF ANIADIDO EN self._refs
-         progress_step = float(100.0 / NUMERO_DE_PDFs_EN_EGELA)
+        progress_step = float(100.0 / NUMERO_DE_PDFs_EN_EGELA)
 
 
-                progress += progress_step
-                progress_var.set(progress)
-                progress_bar.update()
-                time.sleep(0.1)
+        progress += progress_step
+        progress_var.set(progress)
+        progress_bar.update()
+        time.sleep(0.1)
         
         popup.destroy()
         return self._refs
