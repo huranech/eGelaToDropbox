@@ -58,7 +58,7 @@ class eGela:
         time.sleep(1)
         popup.destroy()
 		
-		print("\n##### 4. PETICION #####")
+        print("\n##### 4. PETICION #####")
         #############################################
         # RELLENAR CON CODIGO DE LA PETICION HTTP
         # Y PROCESAMIENTO DE LA RESPUESTA HTTP
@@ -109,7 +109,7 @@ class eGela:
                 progress_var.set(progress)
                 progress_bar.update()
                 time.sleep(0.1)
-
+        
         popup.destroy()
         return self._refs
 
