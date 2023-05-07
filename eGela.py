@@ -13,6 +13,7 @@ class eGela:
     _curso = ""
     _refs = []
     _root = None
+    _uriegela = ""
 
     def __init__(self, root):
         self._root = root
@@ -36,17 +37,15 @@ class eGela:
         eGela._cookie = respuesta.headers['Set-Cookie'].split(";")[0]  # obtenemos la cookie de sesión
         print("Cookie de sesión: " + eGela._cookie)
 
-        # obtenemos la contraseña de forma segura y sin codificar. Obtenemos también el usuario y el nombre
-        usuario = input("¿Cuál es tu nombre de usuario?")
+        # obtenemos el nombre y codificamos la contraseña
         nombre = input("Introduzca su nombre y apellidos en mayúsculas")
-        contrasena = getpass.getpass("introduce la contraseña SIN CODIFICAR: ")
-        contrasena = urllib.parse.urlencode({'c': contrasena})[2:]  # codificamos la contraseña
+        password = urllib.parse.urlencode({'c': password})[2:]  # codificamos la contraseña
 
         # se busca el logintoken en el html
         html = respuesta.content
         documento = BeautifulSoup(html, "html.parser")
         etiqueta_input = documento.find('input', {'name': 'logintoken'})
-        eGela._login = etiqueta_input.get('value')  # guardamos el valor del logintoken
+        logintoken = etiqueta_input.get('value')  # guardamos el valor del logintoken
 
         progress = 25
         progress_var.set(progress)
@@ -59,7 +58,7 @@ class eGela:
         cabeceras = {'Host': 'egela.ehu.eus',
                  'Content-Type': 'application/x-www-form-urlencoded',
                  'Cookie': f'{eGela._cookie}'}
-        cuerpo = f'logintoken={eGela._login}&username={usuario}&password={contrasena}'
+        cuerpo = f'logintoken={logintoken}&username={username}&password={password}'
         respuesta = requests.request(metodo, uri, headers=cabeceras, data=cuerpo, allow_redirects=False)
 
         print(metodo + " " + uri)
@@ -69,10 +68,10 @@ class eGela:
         html = respuesta.content
         # extraemos la cookie
         try:
-            eGela._cookie = respuesta.headers['Set-Cookie'].split(";")[0]
+            print("se ha iniciado sesión correctamente")
         except:
-            print("EL USUARIO O LA CONTRASEÑA SON INCORRECTOS... fin del programa")
-            exit(0)
+            self._login = 0
+            print("el inicio de sesión no es correcto")
         print("Cookie de sesión: " + eGela._cookie)  # imprimimos la nueva cookie
         # obtenemos la uri a la que nos redirige
         uri = respuesta.headers['Location']
@@ -117,9 +116,15 @@ class eGela:
 		
 
         if str(nombre) in str(respuesta.content):
-            #############################################
-            # ACTUALIZAR VARIABLES
-            #############################################
+            # ahora debemos parsear la respuesta para hallar la uri de la asignatura que queremos
+            documento = BeautifulSoup(respuesta.content, "html.parser")
+
+            # buscamos la etiqueta <a> que nos interesa, la cual contiene el texto "Sistemas Web"
+            asignatura = documento.find('a', string="Sistemas Web")
+            self._curso = asignatura.get('href')
+
+            self._login = 1
+            
             self._root.destroy()
         else:
             tkMessageBox.showinfo("Alert Message", "Login incorrect!")
@@ -131,24 +136,38 @@ class eGela:
         progress_bar.update()
 
         print("\n##### 4. PETICION (Página principal de la asignatura en eGela) #####")
-        #############################################
-        # RELLENAR CON CODIGO DE LA PETICION HTTP
-        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
-        #############################################
+        
+        metodo = 'GET'
+        cabeceras = {'Host': 'egela.ehu.eus',
+                     'Cookie': f'{self._cookie}'}
+        respuesta = requests.request(metodo, self._curso, headers=cabeceras, allow_redirects=False)
+        print(metodo + " " + self._curso)
+        print(str(respuesta.status_code) + " " + respuesta.reason)
 
-        progress_step = float(100.0 / len(NUMERO DE PDF_EN_EGELA))
+        documento = BeautifulSoup(respuesta.content, "html.parser")
+
+        a_tags = documento.find_all('a') # buscamos todas las etiquetas <a>
+
+        progress_step = float(100.0 / len(a_tags))  # debería ser el número de pdfs de eGela
 
 
         print("\n##### Analisis del HTML... #####")
         #############################################
-        # ANALISIS DE LA PAGINA DEL AULA EN EGELA
-        # PARA BUSCAR PDFs
+        for a_tag in a_tags:  # por cada a_tag encontrada en la página de eGela
+            # filtramos para obtener únicamente las que son pdf
+            img_tag = a_tag.find('img', src='https://egela.ehu.eus/theme/image.php/ehu/core/1678718742/f/pdf')
+            if img_tag:
+                pdf_link = a_tag.get('href')  # obtenemos la dirección del pdf
+
+                identificarNombre = pdf_link.rfind("/")
+                pdf_name = pdf_link[identificarNombre+1:]
+                self._refs.append({"pdf_name": pdf_name, "pdf_link": pdf_link})  # anidamos el nombre y el link de cada pdf a refs
+
         #############################################
 
         # INICIALIZA Y ACTUALIZAR BARRA DE PROGRESO
         # POR CADA PDF ANIADIDO EN self._refs
-        progress_step = float(100.0 / NUMERO_DE_PDFs_EN_EGELA)
-
+        progress_step = float(100.0 / a_tags)
 
         progress += progress_step
         progress_var.set(progress)
@@ -162,8 +181,23 @@ class eGela:
 
         print("\t##### descargando  PDF... #####")
         #############################################
-        # RELLENAR CON CODIGO DE LA PETICION HTTP
-        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
+        metodo = 'GET'
+        uri = self._refs[selection]
+        cabeceras = {'Host': 'egela.ehu.eus',
+                        'Cookie': f'{self._cookie}'}
+        respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
+
+        print(metodo + " " + uri)
+        print(str(respuesta.status_code) + " " + respuesta.reason)
+
+         # recuperamos la "Location" de las cabeceras de cada respuesta.
+        redireccion = respuesta.headers['Location']
+        descarga = requests.request(metodo, redireccion, headers=cabeceras, allow_redirects=False)
+        print(metodo + " " + redireccion)
+        print(str(descarga.status_code) + " " + descarga.reason)
+
+        pdf_name = self._refs[selection]["pdf_name"]
+        pdf_content = descarga.content
         #############################################
 
         return pdf_name, pdf_content
