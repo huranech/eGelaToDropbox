@@ -36,8 +36,9 @@ class eGela:
         eGela._cookie = respuesta.headers['Set-Cookie'].split(";")[0]  # obtenemos la cookie de sesión
         print("Cookie de sesión: " + eGela._cookie)
 
-        # obtenemos la contraseña de forma segura y sin codificar. Obtenemos también el usuario
+        # obtenemos la contraseña de forma segura y sin codificar. Obtenemos también el usuario y el nombre
         usuario = input("¿Cuál es tu nombre de usuario?")
+        nombre = input("Introduzca su nombre y apellidos en mayúsculas")
         contrasena = getpass.getpass("introduce la contraseña SIN CODIFICAR: ")
         contrasena = urllib.parse.urlencode({'c': contrasena})[2:]  # codificamos la contraseña
 
@@ -100,8 +101,12 @@ class eGela:
 		
         print("\n##### 4. PETICION #####")
         #############################################
-        # RELLENAR CON CODIGO DE LA PETICION HTTP
-        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
+        metodo = 'GET'
+        cabeceras = {'Host': 'egela.ehu.eus',
+                    'Cookie': f'{eGela._cookie}'}
+        respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
+        print(metodo + " " + uri)
+        print(str(respuesta.status_code) + " " + respuesta.reason)
         #############################################
 
         progress = 100
@@ -111,7 +116,7 @@ class eGela:
         popup.destroy()
 		
 
-        if COMPROBACION_DE_LOG_IN:
+        if str(nombre) in str(respuesta.content):
             #############################################
             # ACTUALIZAR VARIABLES
             #############################################
