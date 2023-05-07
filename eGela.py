@@ -5,6 +5,7 @@ import urllib
 from bs4 import BeautifulSoup
 import time
 import helper
+import getpass
 
 class eGela:
     _login = 0
@@ -25,10 +26,26 @@ class eGela:
         print("##### 1. PETICION #####")
         metodo = 'GET'
         uri = "https://egela.ehu.eus/login/index.php"
-        #############################################
-        # RELLENAR CON CODIGO DE LA PETICION HTTP
-        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
-        #############################################
+
+        cabeceras = {'Host': 'egela.ehu.eus'}
+        respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
+
+        print(metodo + " " + uri)
+        print(str(respuesta.status_code) + " " + respuesta.reason)
+
+        eGela._cookie = respuesta.headers['Set-Cookie'].split(";")[0]  # obtenemos la cookie de sesión
+        print("Cookie de sesión: " + eGela._cookie)
+
+        # obtenemos la contraseña de forma segura y sin codificar. Obtenemos también el usuario
+        usuario = input("¿Cuál es tu nombre de usuario?")
+        contrasena = getpass.getpass("introduce la contraseña SIN CODIFICAR: ")
+        contrasena = urllib.parse.urlencode({'c': contrasena})[2:]  # codificamos la contraseña
+
+        # se busca el logintoken en el html
+        html = respuesta.content
+        documento = BeautifulSoup(html, "html.parser")
+        etiqueta_input = documento.find('input', {'name': 'logintoken'})
+        eGela._login = etiqueta_input.get('value')  # guardamos el valor del logintoken
 
         progress = 25
         progress_var.set(progress)
@@ -36,10 +53,28 @@ class eGela:
         time.sleep(1)
 
         print("\n##### 2. PETICION #####")
-        #############################################
-        # RELLENAR CON CODIGO DE LA PETICION HTTP
-        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
-        #############################################
+        
+        metodo = 'POST'
+        cabeceras = {'Host': 'egela.ehu.eus',
+                 'Content-Type': 'application/x-www-form-urlencoded',
+                 'Cookie': f'{eGela._cookie}'}
+        cuerpo = f'logintoken={eGela._login}&username={usuario}&password={contrasena}'
+        respuesta = requests.request(metodo, uri, headers=cabeceras, data=cuerpo, allow_redirects=False)
+
+        print(metodo + " " + uri)
+        print(cuerpo)
+        print(str(respuesta.status_code) + " " + respuesta.reason)
+
+        html = respuesta.content
+        # extraemos la cookie
+        try:
+            eGela._cookie = respuesta.headers['Set-Cookie'].split(";")[0]
+        except:
+            print("EL USUARIO O LA CONTRASEÑA SON INCORRECTOS... fin del programa")
+            exit(0)
+        print("Cookie de sesión: " + eGela._cookie)  # imprimimos la nueva cookie
+        # obtenemos la uri a la que nos redirige
+        uri = respuesta.headers['Location']
 
         progress = 50
         progress_var.set(progress)
@@ -47,10 +82,15 @@ class eGela:
         time.sleep(1)
 
         print("\n##### 3. PETICION #####")
-        #############################################
-        # RELLENAR CON CODIGO DE LA PETICION HTTP
-        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
-        #############################################
+
+        metodo = 'GET'
+        cabeceras = {'Host': 'egela.ehu.eus',
+                    'Cookie': f'{eGela._cookie}'}
+        respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
+        print(metodo + " " + uri)
+        print(str(respuesta.status_code) + " " + respuesta.reason)
+
+        uri = respuesta.headers['Location']
 
         progress = 75
         progress_var.set(progress)
