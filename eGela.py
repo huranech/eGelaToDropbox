@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-import tkMessageBox
+from tkinter import messagebox
 import requests
 import urllib
 from bs4 import BeautifulSoup
