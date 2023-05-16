@@ -112,7 +112,31 @@ class Dropbox:
         # Y PROCESAMIENTO DE LA RESPUESTA HTTP
         #############################################
 
-        self._files = helper.update_listbox2(msg_listbox, self._path, contenido_json)
+        uri = 'https://api.dropboxapi.com/2/files/list_folder'
+
+        headers = {
+            'Authorization': 'Bearer ' + self._access_token,
+            'Content-Type': 'application/json'
+        }
+
+        data = {
+            'path': self._path,
+            'recursive': False,
+            'include_media_info': False,
+            'include_deleted': False,
+            'include_has_explicit_shared_members': False,
+            'include_mounted_folders': True,
+            'include_non_downloadable_files': True
+        }
+
+        response = requests.post(uri, headers=headers, json=data)
+
+        if response.status_code == 200:
+            content_json = response.json()
+            self._files = helper.update_listbox2(msg_listbox, self._path, content_json)
+        else:
+            print("Error occurred while listing folder:", response.text)
+
 
     def transfer_file(self, file_path, file_data):
         print("/upload")
@@ -123,6 +147,21 @@ class Dropbox:
         # Y PROCESAMIENTO DE LA RESPUESTA HTTP
         #############################################
 
+        uri = 'https://content.dropboxapi.com/2/files/upload'
+
+        headers = {
+            'Authorization': 'Bearer ' + self._access_token,
+            'Content-Type': 'application/octet-stream',
+            'Dropbox-API-Arg': json.dumps({'path': file_path, 'mode': 'add', 'autorename': True, 'mute': False})
+        }
+
+        response = requests.post(uri, headers=headers, data=file_data)
+
+        if response.status_code == 200:
+            print("File uploaded successfully.")
+        else:
+            print("Error occurred while uploading file:", response.text)
+
     def delete_file(self, file_path):
         print("/delete_file")
         uri = 'https://api.dropboxapi.com/2/files/delete_v2'
@@ -132,6 +171,25 @@ class Dropbox:
         # Y PROCESAMIENTO DE LA RESPUESTA HTTP
         #############################################
 
+        uri = 'https://api.dropboxapi.com/2/files/delete_v2'
+
+        headers = {
+            'Authorization': 'Bearer ' + self._access_token,
+            'Content-Type': 'application/json'
+        }
+
+        data = {
+            'path': file_path
+        }
+
+        response = requests.post(uri, headers=headers, json=data)
+
+        if response.status_code == 200:
+            print("File deleted successfully.")
+        else:
+            print("Error occurred while deleting file:", response.text)
+
+
     def create_folder(self, path):
         print("/create_folder")
        # https://www.dropbox.com/developers/documentation/http/documentation#files-create_folder
@@ -139,3 +197,22 @@ class Dropbox:
         # RELLENAR CON CODIGO DE LA PETICION HTTP
         # Y PROCESAMIENTO DE LA RESPUESTA HTTP
         #############################################
+
+        uri = 'https://api.dropboxapi.com/2/files/create_folder_v2'
+
+        headers = {
+            'Authorization': 'Bearer ' + self._access_token,
+            'Content-Type': 'application/json'
+        }
+
+        data = {
+            'path': path,
+            'autorename': False
+        }
+
+        response = requests.post(uri, headers=headers, json=data)
+
+        if response.status_code == 200:
+            print("Folder created successfully.")
+        else:
+            print("Error occurred while creating folder:", response.text)
