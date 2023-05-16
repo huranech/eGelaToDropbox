@@ -5,8 +5,8 @@ from socket import AF_INET, socket, SOCK_STREAM
 import json
 import helper
 
-app_key = ''
-app_secret = ''
+app_key = '48unrvyjbl7yjbw'
+app_secret = 'ceek2nqin860zuw'
 server_addr = "localhost"
 server_port = 8090
 redirect_uri = "http://" + server_addr + ":" + str(server_port)
@@ -59,6 +59,48 @@ class Dropbox:
         # PARA LA OBTENCION DEL ACCESS TOKEN
         #############################################
 
+        # Paso 1: Obtener el código de autorización
+
+        # Construir la URL de autorización
+        authorize_url = "https://www.dropbox.com/oauth2/authorize"
+        authorize_params = {
+            "response_type": "code",
+            "client_id": app_key,
+            "redirect_uri": redirect_uri
+        }
+        authorize_url += "?" + urllib.parse.urlencode(authorize_params)
+
+        # Abrir la URL en el navegador para que el usuario pueda autorizar la aplicación
+        webbrowser.open(authorize_url)
+
+        # Paso 2: Esperar a que el servidor local reciba el código de autorización
+
+        # Iniciar el servidor local para recibir el código de autorización
+        auth_code = self.local_server()
+
+        # Paso 3: Intercambiar el código de autorización por un token de acceso
+
+        token_url = "https://api.dropboxapi.com/oauth2/token"
+        token_params = {
+            "grant_type": "authorization_code",
+            "code": auth_code,
+            "client_id": app_key,
+            "client_secret": app_secret,
+            "redirect_uri": redirect_uri
+        }
+
+        # Realizar la solicitud POST para obtener el token de acceso
+        headers = {
+            'User-Agent': 'Python Client',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        response = requests.post(token_url, headers=headers, data=token_params)
+
+        # Procesar la respuesta JSON
+        response_data = json.loads(response.content)
+        self._access_token = response_data["access_token"]
+
+        # Cerrar la ventana principal de la aplicación
         self._root.destroy()
 
     def list_folder(self, msg_listbox):
