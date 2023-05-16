@@ -24,6 +24,9 @@ class eGela:
         progress_var.set(progress)
         progress_bar.update()
 
+        username = username.get()
+        password = password.get()
+
         print("##### 1. PETICION #####")
         metodo = 'GET'
         uri = "https://egela.ehu.eus/login/index.php"
@@ -57,7 +60,7 @@ class eGela:
         metodo = 'POST'
         cabeceras = {'Host': 'egela.ehu.eus',
                  'Content-Type': 'application/x-www-form-urlencoded',
-                 'Cookie': f'{eGela._cookie}'}
+                 'Cookie': f'{self._cookie}'}
         cuerpo = f'logintoken={logintoken}&username={username}&password={password}'
         respuesta = requests.request(metodo, uri, headers=cabeceras, data=cuerpo, allow_redirects=False)
 
@@ -68,11 +71,12 @@ class eGela:
         html = respuesta.content
         # extraemos la cookie
         try:
+            self._cookie = respuesta.headers['Set-Cookie'].split(";")[0]
             print("se ha iniciado sesión correctamente")
         except:
             self._login = 0
             print("el inicio de sesión no es correcto")
-        print("Cookie de sesión: " + eGela._cookie)  # imprimimos la nueva cookie
+        print("Cookie de sesión: " + self._cookie)  # imprimimos la nueva cookie
         # obtenemos la uri a la que nos redirige
         uri = respuesta.headers['Location']
 
@@ -85,11 +89,11 @@ class eGela:
 
         metodo = 'GET'
         cabeceras = {'Host': 'egela.ehu.eus',
-                    'Cookie': f'{eGela._cookie}'}
+                    'Cookie': f'{self._cookie}'}
         respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
         print(metodo + " " + uri)
         print(str(respuesta.status_code) + " " + respuesta.reason)
-
+        print(respuesta.headers)
         uri = respuesta.headers['Location']
 
         progress = 75
@@ -102,7 +106,7 @@ class eGela:
         #############################################
         metodo = 'GET'
         cabeceras = {'Host': 'egela.ehu.eus',
-                    'Cookie': f'{eGela._cookie}'}
+                    'Cookie': f'{self._cookie}'}
         respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
         print(metodo + " " + uri)
         print(str(respuesta.status_code) + " " + respuesta.reason)
