@@ -5,7 +5,7 @@ import urllib
 from bs4 import BeautifulSoup
 import time
 import helper
-import getpass
+import json
 
 class eGela:
     _login = 1
@@ -93,7 +93,6 @@ class eGela:
         respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
         print(metodo + " " + uri)
         print(str(respuesta.status_code) + " " + respuesta.reason)
-        print(respuesta.headers)
         uri = respuesta.headers['Location']
 
         progress = 75
@@ -161,10 +160,9 @@ class eGela:
             # filtramos para obtener únicamente las que son pdf
             img_tag = a_tag.find('img', src='https://egela.ehu.eus/theme/image.php/ehu/core/1684226285/f/pdf')
             if img_tag:
+                pdf_name = a_tag.find('span', class_= "instancename").get_text()  # obtenemos el nombre del pdf
                 pdf_link = a_tag.get('href')  # obtenemos la dirección del pdf
 
-                identificarNombre = pdf_link.rfind("/")
-                pdf_name = pdf_link[identificarNombre+1:]
                 self._refs.append({"pdf_name": pdf_name, "pdf_link": pdf_link})  # anidamos el nombre y el link de cada pdf a refs
 
         #############################################
@@ -186,7 +184,11 @@ class eGela:
         print("\t##### descargando  PDF... #####")
         #############################################
         metodo = 'GET'
-        uri = self._refs[selection]
+        pdf = self._refs[selection]
+        print(pdf)
+        #pdf = json.loads(pdf)
+        uri = pdf['pdf_link']
+        pdf_name = pdf['pdf_name']
         cabeceras = {'Host': 'egela.ehu.eus',
                         'Cookie': f'{self._cookie}'}
         respuesta = requests.request(metodo, uri, headers=cabeceras, allow_redirects=False)
@@ -194,13 +196,12 @@ class eGela:
         print(metodo + " " + uri)
         print(str(respuesta.status_code) + " " + respuesta.reason)
 
-         # recuperamos la "Location" de las cabeceras de cada respuesta.
+        # recuperamos la "Location" de las cabeceras de cada respuesta.
         redireccion = respuesta.headers['Location']
         descarga = requests.request(metodo, redireccion, headers=cabeceras, allow_redirects=False)
         print(metodo + " " + redireccion)
         print(str(descarga.status_code) + " " + descarga.reason)
 
-        pdf_name = self._refs[selection]["pdf_name"]
         pdf_content = descarga.content
         #############################################
 

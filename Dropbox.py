@@ -13,7 +13,7 @@ redirect_uri = "http://" + server_addr + ":" + str(server_port)
 
 class Dropbox:
     _access_token = ""
-    _path = "/"
+    _path = ""
     _files = []
     _root = None
     _msg_listbox = None
@@ -140,6 +140,8 @@ class Dropbox:
 
     def transfer_file(self, file_path, file_data):
         print("/upload")
+        print("filepath = " + str(file_path))
+        print("filedata = " + str(file_data))
         uri = 'https://content.dropboxapi.com/2/files/upload'
         # https://www.dropbox.com/developers/documentation/http/documentation#files-upload
         #############################################
