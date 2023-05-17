@@ -4,6 +4,8 @@ import webbrowser
 from socket import AF_INET, socket, SOCK_STREAM
 import json
 import helper
+import pyperclip
+
 
 app_key = '48unrvyjbl7yjbw'
 app_secret = 'ceek2nqin860zuw'
@@ -194,7 +196,7 @@ class Dropbox:
 
     def create_folder(self, path):
         print("/create_folder")
-       # https://www.dropbox.com/developers/documentation/http/documentation#files-create_folder
+
         #############################################
         # RELLENAR CON CODIGO DE LA PETICION HTTP
         # Y PROCESAMIENTO DE LA RESPUESTA HTTP
@@ -246,3 +248,37 @@ class Dropbox:
             print("File downloaded successfully.")
         else:
             print("Error occurred while downloading file:", response.text)
+
+    def create_shared_link(self, file_path):
+        print("/create_shared_link")
+        uri = 'https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings'
+        #############################################
+        # RELLENAR CON CODIGO DE LA PETICION HTTP
+        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
+        #############################################
+
+        uri = 'https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings'
+
+        headers = {
+            'Authorization': 'Bearer ' + self._access_token,
+            'Content-Type': 'application/json'
+        }
+
+        data = {
+            'path': file_path,
+            'settings': {
+                'requested_visibility': 'public'
+            }
+        }
+
+        response = requests.post(uri, headers=headers, json=data)
+
+        if response.status_code == 200:
+            content_json = response.json()
+            shared_link = content_json['url']
+            print("Shared link created:", shared_link)
+            # Guardar el enlace compartido en el portapapeles
+            pyperclip.copy(shared_link)
+            print("El enlace se ha copiado al portapapeles.")
+        else:
+            print("Error occurred while creating shared link:", response.text)

@@ -131,6 +131,18 @@ def download_file():
 
     popup.destroy()
     dropbox.list_folder(msg_listbox2)
+def share_file():
+
+    selected_item = msg_listbox2.curselection()[0]
+    file = dropbox._files[selected_item]
+    if file[".tag"] == "file":
+        file_path = dropbox._path + "/" + file["name"]
+        shared_link = dropbox.create_shared_link(file_path)
+        if shared_link is not None:
+            # Hacer algo con el enlace compartido, como mostrarlo en una ventana emergente o copiarlo al portapapeles
+            print("Enlace compartido:", shared_link)
+        else:
+            print("No se pudo crear el enlace compartido")
 
 
 
@@ -274,7 +286,10 @@ button3 = tk.Button(frame2, borderwidth=4, text="Create folder", width=10, pady=
 button3.pack(padx=2, pady=2)
 button4 = tk.Button(frame2, borderwidth=4, text="Download file", width=10, pady=8, command=download_file)
 button4.pack(padx=2, pady=2)
+button4 = tk.Button(frame2, borderwidth=4, text="Share", width=10, pady=8, command=share_file)
+button4.pack(padx=2, pady=2)
 frame2.grid(row=1, column=3,  ipadx=10, ipady=10)
+
 
 for each in pdfs:
     msg_listbox1.insert(tk.END, each['pdf_name'])
