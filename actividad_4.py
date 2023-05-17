@@ -110,6 +110,29 @@ def create_folder():
     send_button.pack(side=tk.TOP)
     dropbox._root = popup
 
+def download_file():
+    popup, progress_var, progress_bar = helper.progress("download_file", "Downloading files...")
+    progress = 0
+    progress_var.set(progress)
+    progress_bar.update()
+    progress_step = float(100.0 / len(selected_items2))
+
+    for each in selected_items2:
+        selected_file = dropbox._files[each]
+        if dropbox._path == "/":
+            path = "/" + selected_file['name']
+        else:
+            path = dropbox._path + "/" + selected_file['name']
+        dropbox.download_file(path)
+
+        progress += progress_step
+        progress_var.set(progress)
+        progress_bar.update()
+
+    popup.destroy()
+    dropbox.list_folder(msg_listbox2)
+
+
 
 ##########################################################################################################
 
@@ -249,6 +272,8 @@ button2 = tk.Button(frame2, borderwidth=4, text="Delete", width=10, pady=8, comm
 button2.pack(padx=2, pady=2)
 button3 = tk.Button(frame2, borderwidth=4, text="Create folder", width=10, pady=8, command=create_folder)
 button3.pack(padx=2, pady=2)
+button4 = tk.Button(frame2, borderwidth=4, text="Download file", width=10, pady=8, command=download_file)
+button4.pack(padx=2, pady=2)
 frame2.grid(row=1, column=3,  ipadx=10, ipady=10)
 
 for each in pdfs:

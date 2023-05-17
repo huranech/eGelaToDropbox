@@ -218,3 +218,31 @@ class Dropbox:
             print("Folder created successfully.")
         else:
             print("Error occurred while creating folder:", response.text)
+
+    def download_file(self, file_path):
+        print("/download_file")
+        uri = 'https://content.dropboxapi.com/2/files/download'
+        # https://www.dropbox.com/developers/documentation/http/documentation#files-download
+        #############################################
+        # RELLENAR CON CODIGO DE LA PETICION HTTP
+        # Y PROCESAMIENTO DE LA RESPUESTA HTTP
+        #############################################
+
+        uri = 'https://content.dropboxapi.com/2/files/download'
+
+        headers = {
+            'Authorization': 'Bearer ' + self._access_token,
+            'Dropbox-API-Arg': json.dumps({'path': file_path})
+        }
+
+        response = requests.post(uri, headers=headers)
+
+        if response.status_code == 200:
+            # Guardar el archivo descargado
+            file_data = response.content
+            file_name = file_path.split('/')[-1]
+            with open(file_name, 'wb') as file:
+                file.write(file_data)
+            print("File downloaded successfully.")
+        else:
+            print("Error occurred while downloading file:", response.text)
