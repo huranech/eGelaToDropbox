@@ -8,7 +8,7 @@ import helper
 import getpass
 
 class eGela:
-    _login = 0
+    _login = 1
     _cookie = ""
     _curso = ""
     _refs = []
@@ -159,7 +159,7 @@ class eGela:
         #############################################
         for a_tag in a_tags:  # por cada a_tag encontrada en la página de eGela
             # filtramos para obtener únicamente las que son pdf
-            img_tag = a_tag.find('img', src='https://egela.ehu.eus/theme/image.php/ehu/core/1678718742/f/pdf')
+            img_tag = a_tag.find('img', src='https://egela.ehu.eus/theme/image.php/ehu/core/1684226285/f/pdf')
             if img_tag:
                 pdf_link = a_tag.get('href')  # obtenemos la dirección del pdf
 

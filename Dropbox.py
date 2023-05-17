@@ -30,13 +30,13 @@ class Dropbox:
 
         # recibe la redireccion 302 del navegador
         client_connection, client_address = server_socket.accept()
-        eskaera = client_connection.recv(1024)
+        peticion = client_connection.recv(1024)
         print("\tRequest from the browser received at local server:")
-        print (eskaera)
+        print (peticion)
 
         # buscar en solicitud el "auth_code"
-        lehenengo_lerroa = eskaera.split('\n')[0]
-        aux_auth_code = lehenengo_lerroa.split(' ')[1]
+        primera_linea = peticion.decode('UTF8').split('\n')[0]
+        aux_auth_code = primera_linea.split(' ')[1]
         auth_code = aux_auth_code[7:].split('&')[0]
         print ("\tauth_code: " + auth_code)
 
@@ -46,7 +46,7 @@ class Dropbox:
                         "<head><title>Proba</title></head>" \
                         "<body>The authentication flow has completed. Close this window.</body>" \
                         "</html>"
-        client_connection.sendall(http_response)
+        client_connection.sendall(http_response.encode(encoding="utf-8"))
         client_connection.close()
         server_socket.close()
 
