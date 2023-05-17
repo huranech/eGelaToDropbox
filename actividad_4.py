@@ -168,6 +168,7 @@ if not egela._login:
     exit()
 # Si nos logeamos en eGela cogemos las referencias a los pdfs
 pdfs = egela.get_pdf_refs()
+print(str(pdfs))
 
 ##########################################################################################################
 # Login Dropbox

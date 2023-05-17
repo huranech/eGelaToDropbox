@@ -28,7 +28,7 @@ class Dropbox:
         server_socket.listen(1)
         print("\tLocal server listening on port " + str(server_port))
 
-        # recibe la redireccio 302 del navegador
+        # recibe la redireccion 302 del navegador
         client_connection, client_address = server_socket.accept()
         eskaera = client_connection.recv(1024)
         print("\tRequest from the browser received at local server:")

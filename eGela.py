@@ -41,7 +41,7 @@ class eGela:
         print("Cookie de sesión: " + eGela._cookie)
 
         # obtenemos el nombre y codificamos la contraseña
-        nombre = input("Introduzca su nombre y apellidos en mayúsculas")
+        nombre = input("Introduzca su nombre y apellidos en mayúsculas: ")
         password = urllib.parse.urlencode({'c': password})[2:]  # codificamos la contraseña
 
         # se busca el logintoken en el html
@@ -127,7 +127,7 @@ class eGela:
             asignatura = documento.find('a', string="Sistemas Web")
             self._curso = asignatura.get('href')
 
-            self._login = 1
+            print("login = " + str(self._login))
             
             self._root.destroy()
         else:
@@ -152,7 +152,7 @@ class eGela:
 
         a_tags = documento.find_all('a') # buscamos todas las etiquetas <a>
 
-        progress_step = float(100.0 / len(a_tags))  # debería ser el número de pdfs de eGela
+        progress_step = float(100.0 / float(len(a_tags)))  # debería ser el número de pdfs de eGela
 
 
         print("\n##### Analisis del HTML... #####")
@@ -171,7 +171,7 @@ class eGela:
 
         # INICIALIZA Y ACTUALIZAR BARRA DE PROGRESO
         # POR CADA PDF ANIADIDO EN self._refs
-        progress_step = float(100.0 / a_tags)
+        progress_step = float(100.0 / float(len(a_tags)))
 
         progress += progress_step
         progress_var.set(progress)
